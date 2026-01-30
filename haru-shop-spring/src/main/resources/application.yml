@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: haru-shop-spring
+  datasource:
+    url: jdbc:mariadb://mariadb:3306/harushop
+    username: ${DB_USERNAME:harushop}
+    password: ${DB_PASSWORD:harushop}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8080

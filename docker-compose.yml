@@ -1,0 +1,52 @@
+services:
+  # Next.js 프론트엔드 - 포트 201
+  haru-shop-next:
+    build:
+      context: ./haru-shop-next
+      dockerfile: Dockerfile
+    container_name: haru-shop-next
+    ports:
+      - "201:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+  # Spring Boot API - 포트 202
+  haru-shop-spring:
+    build:
+      context: ./haru-shop-spring
+      dockerfile: Dockerfile
+    container_name: haru-shop-spring
+    ports:
+      - "202:8080"
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      - DB_USERNAME=harushop
+      - DB_PASSWORD=harushop
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb:3306/harushop
+
+  # MariaDB - 포트 203
+  mariadb:
+    image: mariadb:11.2
+    container_name: haru-shop-mariadb
+    ports:
+      - "203:3306"
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: harushop
+      MARIADB_USER: harushop
+      MARIADB_PASSWORD: harushop
+      MARIADB_ROOT_PASSWORD: rootpass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mariadb_data:
