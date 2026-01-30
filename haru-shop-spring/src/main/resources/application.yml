@@ -6,10 +6,43 @@ spring:
     username: ${DB_USERNAME:harushop}
     password: ${DB_PASSWORD:harushop}
     driver-class-name: org.mariadb.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
+  sql:
+    init:
+      mode: always
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: haru.park.entity
+  configuration:
+    map-underscore-to-camel-case: true
 
 server:
   port: 8080
+
+# 구글 OAuth (리다이렉트 방식)
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+  client-secret: ${GOOGLE_CLIENT_SECRET:}
+  # Google이 콜백으로 호출할 백엔드 URL (Google Cloud Console 승인된 리디렉션 URI에 등록)
+  redirect-uri: ${GOOGLE_REDIRECT_URI:https://spring.haru.company/api/auth/google/callback}
+# 로그인 성공 후 토큰을 넘겨줄 프론트 URL
+frontend:
+  redirect-uri: ${FRONTEND_REDIRECT_URI:https://next.haru.company/login/callback}
+
+# 네이버 OAuth (리다이렉트 방식)
+naver:
+  client-id: ${NAVER_CLIENT_ID:}
+  client-secret: ${NAVER_CLIENT_SECRET:}
+  redirect-uri: ${NAVER_REDIRECT_URI:https://spring.haru.company/api/auth/naver/callback}
+
+# 카카오 OAuth (리다이렉트 방식)
+kakao:
+  client-id: ${KAKAO_CLIENT_ID:}
+  # 카카오는 REST API 키만 사용하거나 Client Secret(보안 강화 시) 사용
+  client-secret: ${KAKAO_CLIENT_SECRET:}
+  redirect-uri: ${KAKAO_REDIRECT_URI:https://spring.haru.company/api/auth/kakao/callback}
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:harushop-jwt-secret-change-in-production}
+  expiration-ms: 86400000

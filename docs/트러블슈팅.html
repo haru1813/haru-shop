@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haru Shop 트러블슈팅</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { margin-top: 2rem; color: #555; }
+    .meta { color: #666; font-size: 0.9rem; margin-bottom: 2rem; }
+    code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; border-radius: 6px; }
+    ul { padding-left: 1.5rem; }
+    .solution { background: #e8f5e9; padding: 1rem; border-radius: 6px; margin: 1rem 0; }
+    .cause { background: #fff3e0; padding: 1rem; border-radius: 6px; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Haru Shop 트러블슈팅</h1>
+  <p class="meta">Haru Shop 프로젝트에서 발생한 이슈와 해결 방법을 정리합니다.</p>
+
+  <h2 id="sns-login-localhost">이슈: 다른 PC에서 SNS 로그인 시 localhost:502로 이동</h2>
+
+  <h3>증상</h3>
+  <ul>
+    <li>다른 컴퓨터에서 Next.js(예: <code>http://서버IP:501</code>)로 접속 후 SNS(Google/카카오/네이버) 로그인 버튼을 누르면, Spring API 주소가 <code>http://localhost:502</code>로 열림.</li>
+    <li>해당 PC의 localhost에는 Spring이 없어 로그인/API 호출이 실패함.</li>
+  </ul>
+
+  <h3>원인</h3>
+  <div class="cause">
+    <ol>
+      <li><strong>API URL이 모듈 로드 시 한 번만 계산됨</strong><br>
+        <code>haru-shop-next/src/lib/api.ts</code>에서 <code>API_BASE_URL</code>을 모듈 최상단에서 <code>getApiBaseUrl()</code>로 계산하고 있었음. Next.js는 서버(SSR)에서도 모듈을 로드하므로, 그 시점에는 <code>window</code>가 없어 <code>getApiBaseUrl()</code>이 항상 <code>http://localhost:502/api</code>를 반환함.</li>
+      <li><strong>로그인 페이지 첫 렌더가 서버에서 실행됨</strong><br>
+        로그인 페이지가 서버에서 먼저 렌더될 때 이미 <code>localhost:502</code>가 href에 들어가고, 클라이언트에서도 그 값이 그대로 사용됨.</li>
+    </ol>
+  </div>
+
+  <h3>해결 방법</h3>
+  <div class="solution">
+    <p><strong>1. api.ts 수정</strong></p>
+    <ul>
+      <li><code>export const API_BASE_URL = getApiBaseUrl();</code> 제거. (모듈 로드 시점 계산 제거)</li>
+      <li><code>getApiBaseUrl()</code>을 export하고, <code>getGoogleLoginUrl()</code>, <code>getKakaoLoginUrl()</code>, <code>getNaverLoginUrl()</code>, <code>postGoogleLogin()</code> 내부에서 <strong>호출 시점마다</strong> <code>getApiBaseUrl()</code>을 호출하도록 변경.</li>
+      <li>브라우저에서 호출될 때는 <code>window.location.hostname</code>으로 접속한 호스트를 사용하므로, IP로 접속하면 <code>http://서버IP:502/api</code>가 사용됨.</li>
+    </ul>
+    <p><strong>2. 로그인 페이지(login/page.tsx) 수정</strong></p>
+    <ul>
+      <li>로그인 URL을 <code>useState</code> + <code>useEffect</code>로 관리.</li>
+      <li>마운트 후(클라이언트에서만 실행) <code>useEffect</code> 안에서 <code>getGoogleLoginUrl()</code> 등을 호출해 state에 넣고, 그 값으로 링크 <code>href</code> 설정.</li>
+      <li>초기에는 빈 문자열이라 <code>href="#"</code>로 두고, <code>useEffect</code> 실행 후 접속한 호스트 기준의 올바른 API 주소로 갱신됨.</li>
+    </ul>
+  </div>
+
+  <h3>API URL 결정 규칙 (getApiBaseUrl)</h3>
+  <ul>
+    <li><code>next.haru.company</code> → <code>https://spring.haru.company/api</code></li>
+    <li><code>localhost</code> → <code>http://localhost:502/api</code></li>
+    <li>그 외(IP 등) → <code>http://현재호스트:502/api</code> (환경 변수 <code>NEXT_PUBLIC_API_URL</code>이 있으면 해당 값 사용)</li>
+  </ul>
+
+  <h3>관련 설정 참고</h3>
+  <ul>
+    <li><strong>NEXT_PUBLIC_API_URL</strong>: Next 앱에서 사용할 API 베이스 URL. 정의하지 않으면 위 규칙대로 동작. <code>haru-shop-next/.env.local</code> 또는 Docker 빌드 시 설정 가능.</li>
+    <li><strong>FRONTEND_REDIRECT_URI</strong>: SNS 로그인 성공 후 Spring이 리다이렉트할 프론트 URL. 다른 PC에서 IP로 접속해 사용할 경우 <code>http://서버IP:501/login/callback</code> 등으로 설정해야 로그인 후 올바른 주소로 돌아옴.</li>
+    <li>다른 PC에서 서버 IP:502로 접근 가능하도록 방화벽/포트 개방 필요.</li>
+  </ul>
+
+  <p class="meta" style="margin-top: 3rem;">문서 위치: <code>haru-shop/docs/트러블슈팅.html</code></p>
+</body>
+</html>

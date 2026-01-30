@@ -150,20 +150,140 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* 라이트 테마 고정 (다크 모드·Tailwind 등 검정 배경 방지) */
+html {
+  margin: 0;
+  padding: 0;
+  background: #ffffff !important;
+  color-scheme: light;
 }
-
-html,
 body {
   margin: 0;
   padding: 0;
-}
-body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #ffffff !important;
+  color: #171717;
   font-family: Arial, Helvetica, sans-serif;
+}
+.app-layout {
+  background: #ffffff !important;
+}
+.app-main {
+  background: #f5f5f5 !important;
+}
+
+/* 로그인 페이지: 카드 중앙 정렬, 불필요한 스크롤 제거 */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.login-logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #171717;
+}
+.login-subtitle {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+}
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.login-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+.login-footer-link {
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.login-footer-link:hover {
+  color: #374151;
+  text-decoration: underline;
+}
+
+/* Google 로그인 버튼 (리다이렉트용) */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  color: #3c4043;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-google:hover {
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  color: #3c4043;
+}
+.btn-google svg {
+  flex-shrink: 0;
+}
+
+/* 카카오/네이버 로그인 버튼 */
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  text-decoration: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-login svg {
+  flex-shrink: 0;
+}
+/* 카카오: 공식 노란색 #FEE500 */
+.btn-kakao {
+  background: #FEE500;
+  color: #191919;
+}
+a.btn-kakao:hover {
+  background: #f5dc00;
+  color: #191919;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+/* 네이버: 공식 녹색 #03C75A */
+.btn-naver {
+  background: #03C75A;
+  color: #fff;
+}
+a.btn-naver:hover {
+  background: #02b350;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
