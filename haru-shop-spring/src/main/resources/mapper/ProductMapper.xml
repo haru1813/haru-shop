@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.ProductMapper">
+
+  <resultMap id="ProductResultMap" type="haru.park.entity.Product">
+    <id column="id" property="id" />
+    <result column="category_id" property="categoryId" />
+    <result column="name" property="name" />
+    <result column="slug" property="slug" />
+    <result column="price" property="price" />
+    <result column="description" property="description" />
+    <result column="image_url" property="imageUrl" />
+    <result column="stock" property="stock" />
+    <result column="is_active" property="isActive" />
+    <result column="delivery_fee_template_id" property="deliveryFeeTemplateId" />
+    <result column="created_at" property="createdAt" />
+    <result column="updated_at" property="updatedAt" />
+  </resultMap>
+
+  <select id="selectListWithCategory" resultType="haru.park.dto.ProductListItemDto">
+    SELECT p.id AS id, p.name AS name, p.slug AS slug, p.price AS price, p.image_url AS imageUrl, c.name AS categoryName
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.is_active = 1
+    <if test="categoryId != null">
+      AND p.category_id = #{categoryId}
+    </if>
+    <if test="search != null and search != ''">
+      AND (p.name LIKE CONCAT('%', #{search}, '%') OR p.description LIKE CONCAT('%', #{search}, '%'))
+    </if>
+    ORDER BY p.created_at DESC
+    <if test="limit != null">
+      LIMIT #{limit}
+    </if>
+    <if test="offset != null">
+      OFFSET #{offset}
+    </if>
+  </select>
+
+  <select id="selectById" resultMap="ProductResultMap">
+    SELECT id, category_id, name, slug, price, description, image_url, stock, is_active, delivery_fee_template_id, created_at, updated_at
+    FROM products
+    WHERE id = #{id} AND is_active = 1
+  </select>
+
+  <select id="selectImagesByProductId" resultType="haru.park.entity.ProductImage">
+    SELECT id, product_id AS productId, image_url AS imageUrl, sort_order AS sortOrder
+    FROM product_images
+    WHERE product_id = #{productId}
+    ORDER BY sort_order, id
+  </select>
+
+  <select id="selectOptionMastersByProductId" resultType="haru.park.entity.OptionMaster">
+    SELECT id, product_id AS productId, name, option_type AS optionType, option_key AS optionKey, is_required AS isRequired, sort_order AS sortOrder, created_at AS createdAt, updated_at AS updatedAt
+    FROM option_masters
+    WHERE product_id = #{productId}
+    ORDER BY sort_order, id
+  </select>
+
+  <select id="selectOptionItemsByOptionMasterId" resultType="haru.park.entity.OptionItem">
+    SELECT id, option_master_id AS optionMasterId, name, value, option_price AS optionPrice, sort_order AS sortOrder
+    FROM option_items
+    WHERE option_master_id = #{optionMasterId}
+    ORDER BY sort_order, id
+  </select>
+
+  <select id="selectSkusByProductId" resultType="haru.park.entity.ProductSku">
+    SELECT id, product_id AS productId, option_key AS optionKey, option_price AS optionPrice, stock, sell_status AS sellStatus
+    FROM product_skus
+    WHERE product_id = #{productId}
+    ORDER BY option_key
+  </select>
+
+  <select id="selectDetailLinesByProductId" resultType="haru.park.entity.ProductDetailLine">
+    SELECT id, product_id AS productId, sort_order AS sortOrder, line_text AS lineText
+    FROM product_detail_lines
+    WHERE product_id = #{productId}
+    ORDER BY sort_order, id
+  </select>
+
+  <select id="selectTextOptionSpecsByProductId" resultType="haru.park.entity.ProductTextOptionSpec">
+    SELECT id, product_id AS productId, option_master_id AS optionMasterId, label, placeholder, max_length AS maxLength, sort_order AS sortOrder
+    FROM product_text_option_specs
+    WHERE product_id = #{productId}
+    ORDER BY sort_order, id
+  </select>
+
+  <!-- 주문 시 재고 감소: 증감 연산자로 감소 (재고 부족 시 0행 업데이트) -->
+  <update id="decreaseProductStock">
+    UPDATE products
+    SET stock = stock - #{quantity}
+    WHERE id = #{productId} AND stock >= #{quantity}
+  </update>
+
+  <update id="decreaseSkuStock">
+    UPDATE product_skus
+    SET stock = stock - #{quantity}
+    WHERE id = #{skuId} AND stock >= #{quantity}
+  </update>
+
+</mapper>

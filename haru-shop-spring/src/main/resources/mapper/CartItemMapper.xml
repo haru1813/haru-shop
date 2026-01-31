@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.CartItemMapper">
+
+  <resultMap id="CartItemResultMap" type="haru.park.entity.CartItem">
+    <id column="id" property="id" />
+    <result column="user_id" property="userId" />
+    <result column="product_id" property="productId" />
+    <result column="sku_id" property="skuId" />
+    <result column="quantity" property="quantity" />
+    <result column="option_text" property="optionText" />
+    <result column="selected_options" property="selectedOptions" />
+    <result column="created_at" property="createdAt" />
+    <result column="updated_at" property="updatedAt" />
+  </resultMap>
+
+  <select id="selectByUserIdWithProduct" resultType="haru.park.dto.CartItemDto">
+    SELECT c.id AS id, c.product_id AS productId, c.sku_id AS skuId,
+           p.name AS productName,
+           (p.price + COALESCE(s.option_price, 0)) AS price,
+           p.image_url AS imageUrl,
+           c.quantity AS quantity, c.option_text AS optionText, c.selected_options AS selectedOptions
+    FROM cart_items c
+    JOIN products p ON c.product_id = p.id
+    LEFT JOIN product_skus s ON c.sku_id = s.id
+    WHERE c.user_id = #{userId}
+    ORDER BY c.created_at DESC
+  </select>
+
+  <select id="selectByUserId" resultMap="CartItemResultMap">
+    SELECT id, user_id, product_id, sku_id, quantity, option_text, selected_options, created_at, updated_at
+    FROM cart_items
+    WHERE user_id = #{userId}
+    ORDER BY created_at DESC
+  </select>
+
+  <select id="selectById" resultMap="CartItemResultMap">
+    SELECT id, user_id, product_id, sku_id, quantity, option_text, selected_options, created_at, updated_at
+    FROM cart_items
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO cart_items (user_id, product_id, sku_id, quantity, option_text, selected_options)
+    VALUES (#{userId}, #{productId}, #{skuId}, #{quantity}, #{optionText}, #{selectedOptions})
+  </insert>
+
+  <update id="updateQuantity">
+    UPDATE cart_items SET quantity = #{quantity}, updated_at = NOW() WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM cart_items WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByUserId">
+    DELETE FROM cart_items WHERE user_id = #{userId}
+  </delete>
+
+</mapper>

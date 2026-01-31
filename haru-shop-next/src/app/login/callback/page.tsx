@@ -28,7 +28,16 @@ function CallbackContent() {
           localStorage.setItem("harushop_user", JSON.stringify(user));
         }
         setStatus("ok");
-        window.location.href = "/";
+        let nextUrl = "/";
+        try {
+          const saved = typeof window !== "undefined" ? sessionStorage.getItem("harushop_login_next") : null;
+          if (saved && saved.startsWith("/")) nextUrl = saved;
+          else nextUrl = searchParams.get("next") || "/";
+          if (typeof window !== "undefined") sessionStorage.removeItem("harushop_login_next");
+        } catch {
+          nextUrl = searchParams.get("next") || "/";
+        }
+        window.location.href = nextUrl.startsWith("/") ? nextUrl : "/";
         return;
       } catch {
         setStatus("error");

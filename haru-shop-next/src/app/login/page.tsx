@@ -1,14 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { getGoogleLoginUrl, getKakaoLoginUrl, getNaverLoginUrl } from "@/lib/api";
 import { GoogleIcon, KakaoIcon, NaverIcon } from "@/components/LoginIcons";
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
   const [googleLoginUrl, setGoogleLoginUrl] = useState("");
   const [kakaoLoginUrl, setKakaoLoginUrl] = useState("");
   const [naverLoginUrl, setNaverLoginUrl] = useState("");
+
+  useEffect(() => {
+    const next = searchParams.get("next");
+    if (next && next.startsWith("/")) {
+      try {
+        sessionStorage.setItem("harushop_login_next", next);
+      } catch {
+        // ignore
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setGoogleLoginUrl(getGoogleLoginUrl());
@@ -56,5 +69,21 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="login-page">
+          <div className="login-card">
+            <p className="login-subtitle">로딩 중...</p>
+          </div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

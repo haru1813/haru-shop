@@ -19,6 +19,12 @@
     WHERE email = #{email}
   </select>
 
+  <select id="selectById" resultMap="UserResultMap">
+    SELECT id, email, name, picture, provider, role, created_at
+    FROM users
+    WHERE id = #{id}
+  </select>
+
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO users (email, name, picture, provider, role, created_at)
     VALUES (#{email}, #{name}, #{picture}, #{provider}, #{role}, #{createdAt})

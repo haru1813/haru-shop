@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.WishlistMapper">
+
+  <resultMap id="WishlistResultMap" type="haru.park.entity.Wishlist">
+    <id column="id" property="id" />
+    <result column="user_id" property="userId" />
+    <result column="product_id" property="productId" />
+    <result column="created_at" property="createdAt" />
+  </resultMap>
+
+  <select id="selectByUserIdWithProduct" resultType="haru.park.dto.WishlistItemDto">
+    SELECT w.id AS id, w.product_id AS productId, p.name AS productName, p.price AS price, p.image_url AS imageUrl
+    FROM wishlists w
+    JOIN products p ON w.product_id = p.id
+    WHERE w.user_id = #{userId}
+    ORDER BY w.created_at DESC
+  </select>
+
+  <select id="selectByUserId" resultMap="WishlistResultMap">
+    SELECT id, user_id, product_id, created_at
+    FROM wishlists
+    WHERE user_id = #{userId}
+    ORDER BY created_at DESC
+  </select>
+
+  <select id="selectByUserIdAndProductId" resultMap="WishlistResultMap">
+    SELECT id, user_id, product_id, created_at
+    FROM wishlists
+    WHERE user_id = #{userId} AND product_id = #{productId}
+    LIMIT 1
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO wishlists (user_id, product_id)
+    VALUES (#{userId}, #{productId})
+  </insert>
+
+  <delete id="deleteByUserIdAndProductId">
+    DELETE FROM wishlists WHERE user_id = #{userId} AND product_id = #{productId}
+  </delete>
+
+</mapper>

@@ -4,7 +4,15 @@
 .env
 .env.*
 
-# 아래는 저장소에 포함 (무시하지 않음): docs/*.html, Dockerfile, docker-compose.yml
+# 제외한 스택 (별도 저장소/폴더에서 관리)
+haru-shop-nuxt/
+haru-shop-django/
+
+# Docker
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose*.yml
 
 # Next.js
 haru-shop-next/node_modules

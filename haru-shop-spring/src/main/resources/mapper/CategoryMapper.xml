@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.CategoryMapper">
+
+  <resultMap id="CategoryResultMap" type="haru.park.entity.Category">
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="slug" property="slug" />
+    <result column="icon" property="icon" />
+    <result column="sort_order" property="sortOrder" />
+    <result column="created_at" property="createdAt" />
+    <result column="updated_at" property="updatedAt" />
+  </resultMap>
+
+  <select id="selectAllOrderBySortOrderAndName" resultMap="CategoryResultMap">
+    SELECT id, name, slug, icon, sort_order, created_at, updated_at
+    FROM categories
+    ORDER BY sort_order ASC, name ASC
+  </select>
+
+  <select id="selectBySlug" resultMap="CategoryResultMap">
+    SELECT id, name, slug, icon, sort_order, created_at, updated_at
+    FROM categories
+    WHERE slug = #{slug}
+    LIMIT 1
+  </select>
+
+</mapper>

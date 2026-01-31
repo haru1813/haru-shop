@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.ReviewMapper">
+
+  <select id="selectByUserIdWithProduct" resultType="haru.park.dto.ReviewListItemDto">
+    SELECT r.id AS id, r.product_id AS productId, p.name AS productName, r.rating AS rating, r.content AS content, r.created_at AS createdAt
+    FROM reviews r
+    JOIN products p ON r.product_id = p.id
+    WHERE r.user_id = #{userId}
+    ORDER BY r.created_at DESC
+  </select>
+
+  <select id="selectById" resultType="haru.park.entity.Review">
+    SELECT id, product_id AS productId, user_id AS userId, rating, content, created_at AS createdAt
+    FROM reviews
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO reviews (product_id, user_id, rating, content)
+    VALUES (#{productId}, #{userId}, #{rating}, #{content})
+  </insert>
+
+  <delete id="deleteById">
+    DELETE FROM reviews WHERE id = #{id}
+  </delete>
+</mapper>

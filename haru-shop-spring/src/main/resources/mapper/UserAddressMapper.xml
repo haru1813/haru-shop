@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.UserAddressMapper">
+
+  <select id="selectByUserId" resultType="haru.park.dto.UserAddressDto">
+    SELECT id, label, recipient_name AS recipientName, phone, postal_code AS postalCode, address, address_detail AS addressDetail, is_default AS isDefault
+    FROM user_addresses
+    WHERE user_id = #{userId}
+    ORDER BY is_default DESC, id ASC
+  </select>
+
+  <select id="selectById" resultType="haru.park.entity.UserAddress">
+    SELECT id, user_id AS userId, label, recipient_name AS recipientName, phone, postal_code AS postalCode, address, address_detail AS addressDetail, is_default AS isDefault
+    FROM user_addresses
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO user_addresses (user_id, label, recipient_name, phone, postal_code, address, address_detail, is_default)
+    VALUES (#{userId}, #{label}, #{recipientName}, #{phone}, #{postalCode}, #{address}, #{addressDetail}, #{isDefault})
+  </insert>
+
+  <update id="update">
+    UPDATE user_addresses
+    SET label = #{label}, recipient_name = #{recipientName}, phone = #{phone}, postal_code = #{postalCode}, address = #{address}, address_detail = #{addressDetail}, is_default = #{isDefault}
+    WHERE id = #{id}
+  </update>
+
+  <update id="clearDefaultByUserId">
+    UPDATE user_addresses SET is_default = 0 WHERE user_id = #{userId}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM user_addresses WHERE id = #{id}
+  </delete>
+</mapper>

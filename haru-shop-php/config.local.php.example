@@ -1,0 +1,13 @@
+<?php
+/**
+ * 로컬 DB 설정 (config.php 가 로드한 뒤 덮어씀)
+ * 사용법: 이 파일을 config.local.php 로 복사 후 수정
+ *
+ * - Docker 안에서 실행: 이 파일 불필요 (환경변수 DB_HOST=mariadb 사용)
+ * - 호스트에서 PHP 실행 시: MariaDB가 localhost:503 에 있다면 아래처럼 설정
+ */
+$dbHost = '127.0.0.1';
+$dbPort = '503';
+$dbName = 'harushop';
+$dbUser = 'harushop';
+$dbPass = 'harushop';

@@ -15,42 +15,40 @@ import java.util.Date;
 public class JwtUtil {
 
     private final JwtProperties jwtProperties;
+    private final SecretKey secretKey;
 
     public JwtUtil(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-    }
-
-    private SecretKey getSigningKey() {
         byte[] keyBytes = jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length < 32) {
-            byte[] padded = new byte[32];
-            System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
-            return Keys.hmacShaKeyFor(padded);
-        }
-        return Keys.hmacShaKeyFor(keyBytes);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(User user) {
+        long now = System.currentTimeMillis();
+        Date expiry = new Date(now + jwtProperties.getExpirationMs());
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId", user.getId())
-                .claim("name", user.getName())
-                .claim("picture", user.getPicture())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpirationMs()))
-                .signWith(getSigningKey())
+                .subject(String.valueOf(user.getId()))
+                .issuedAt(new Date(now))
+                .expiration(expiry)
+                .signWith(secretKey)
                 .compact();
     }
 
-    public Claims parseToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    public String getEmailFromToken(String token) {
-        return parseToken(token).getSubject();
+    /** JWT에서 사용자 ID 추출. 유효하지 않으면 null */
+    public Long getUserIdFromToken(String token) {
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        try {
+            Claims payload = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            String subject = payload.getSubject();
+            return subject != null ? Long.valueOf(subject) : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

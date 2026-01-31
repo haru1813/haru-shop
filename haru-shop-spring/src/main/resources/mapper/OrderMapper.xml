@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.OrderMapper">
+
+  <select id="selectByUserIdWithItems" resultType="haru.park.dto.OrderListItemDto">
+    SELECT o.id AS id, o.order_number AS orderNumber, o.status AS status, o.total_amount AS totalAmount, o.delivery_fee AS deliveryFee, o.receiver_name AS receiverName, o.created_at AS createdAt
+    FROM orders o
+    WHERE o.user_id = #{userId}
+    ORDER BY o.created_at DESC
+  </select>
+
+  <select id="selectById" resultType="haru.park.entity.Order">
+    SELECT id, user_id AS userId, order_number AS orderNumber, status, total_amount AS totalAmount, delivery_fee AS deliveryFee, delivery_fee_template_id AS deliveryFeeTemplateId,
+           shipping_method AS shippingMethod, receiver_name AS receiverName, receiver_phone AS receiverPhone, receiver_address AS receiverAddress, created_at AS createdAt, updated_at AS updatedAt
+    FROM orders
+    WHERE id = #{id}
+  </select>
+
+  <select id="selectItemsByOrderId" resultType="haru.park.entity.OrderItem">
+    SELECT id, order_id AS orderId, product_id AS productId, sku_id AS skuId, product_name AS productName, price, quantity, option_text AS optionText, selected_options AS selectedOptions
+    FROM order_items
+    WHERE order_id = #{orderId}
+    ORDER BY id
+  </select>
+
+  <select id="selectItemDtosByOrderId" resultType="haru.park.dto.OrderItemDto">
+    SELECT oi.id AS id, oi.product_id AS productId, oi.product_name AS productName, oi.price AS price, oi.quantity AS quantity, oi.option_text AS optionText, oi.selected_options AS selectedOptions, p.image_url AS imageUrl
+    FROM order_items oi
+    LEFT JOIN products p ON oi.product_id = p.id
+    WHERE oi.order_id = #{orderId}
+    ORDER BY oi.id
+  </select>
+
+  <insert id="insertOrder" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO orders (user_id, order_number, status, total_amount, delivery_fee, shipping_method, receiver_name, receiver_phone, receiver_address)
+    VALUES (#{userId}, #{orderNumber}, #{status}, #{totalAmount}, #{deliveryFee}, #{shippingMethod}, #{receiverName}, #{receiverPhone}, #{receiverAddress})
+  </insert>
+
+  <insert id="insertOrderItem" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO order_items (order_id, product_id, sku_id, product_name, price, quantity, option_text, selected_options)
+    VALUES (#{orderId}, #{productId}, #{skuId}, #{productName}, #{price}, #{quantity}, #{optionText}, #{selectedOptions})
+  </insert>
+
+  <select id="selectNextOrderNumber" resultType="java.lang.String">
+    SELECT CONCAT('ORD-', YEAR(NOW()), '-', LPAD(COALESCE(MAX(id), 0) + 1, 6, '0'))
+    FROM orders
+  </select>
+
+</mapper>

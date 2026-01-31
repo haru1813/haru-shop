@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="haru.park.mapper.InquiryMapper">
+
+  <select id="selectByUserIdWithProduct" resultType="haru.park.dto.InquiryListItemDto">
+    SELECT i.id AS id, i.product_id AS productId, p.name AS productName, i.title AS title, i.content AS content, i.answer AS answer, i.answered_at AS answeredAt, i.created_at AS createdAt
+    FROM inquiries i
+    JOIN products p ON i.product_id = p.id
+    WHERE i.user_id = #{userId}
+    ORDER BY i.created_at DESC
+  </select>
+
+  <select id="selectById" resultType="haru.park.entity.Inquiry">
+    SELECT id, product_id AS productId, user_id AS userId, title, content, answer, answered_at AS answeredAt, created_at AS createdAt
+    FROM inquiries
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO inquiries (product_id, user_id, title, content)
+    VALUES (#{productId}, #{userId}, #{title}, #{content})
+  </insert>
+</mapper>
