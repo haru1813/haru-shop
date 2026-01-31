@@ -14,6 +14,9 @@ Dockerfile.*
 docker-compose.yml
 docker-compose*.yml
 
+# 문서 (별도 관리)
+docs/
+
 # Next.js
 haru-shop-next/node_modules
 haru-shop-next/.next
